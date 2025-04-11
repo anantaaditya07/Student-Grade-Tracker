@@ -1,0 +1,99 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+# Part 1: Core Functions and Data Structures
+# This part includes the core logic for grade calculation and data handling.
+def calculate_grade(obtained, maximum):
+    """Calculates grade based on obtained marks and maximum marks."""
+    percentage = (obtained / maximum) * 100
+    grades = [(95, 'O'), (90, 'A+'), (85, 'A'), (80, 'B+'), (75, 'B'),
+              (70, 'C+'), (65, 'C'), (60, 'D+'), (50, 'D')]
+    for threshold, grade in grades:
+        if percentage >= threshold:
+            return grade
+    return 'F'
+
+def save_to_file(student_name, records):
+    """Saves student data to a file."""
+    with open("student_grades.txt", "a") as file:
+        file.write(f"Student Name: {student_name}\n")
+        for subject, obtained, maximum, grade in records:
+            file.write(f"{subject}: {grade} (Marks: {obtained}/{maximum})\n")
+        file.write("--------------\n")
+    messagebox.showinfo("Success", "Data saved successfully!")
+
+# Part 2: GUI Setup and Event Handlers
+# This part covers the setup of the main Tkinter interface and event handler functions.
+root = tk.Tk()
+root.title("Student Grade Tracker")
+root.geometry("600x400")
+
+# Input fields and labels
+entry_name = tk.Entry(root)
+entry_name.grid(row=0, column=1, padx=5, pady=5)
+tk.Label(root, text="Student Name:").grid(row=0, column=0, sticky="w")
+
+entry_subject = tk.Entry(root)
+entry_subject.grid(row=1, column=1, padx=5, pady=5)
+tk.Label(root, text="Subject:").grid(row=1, column=0, sticky="w")
+
+entry_obtained = tk.Entry(root)
+entry_obtained.grid(row=2, column=1, padx=5, pady=5)
+tk.Label(root, text="Marks Obtained:").grid(row=2, column=0, sticky="w")
+
+entry_max = tk.Entry(root)
+entry_max.grid(row=3, column=1, padx=5, pady=5)
+tk.Label(root, text="Maximum Marks:").grid(row=3, column=0, sticky="w")
+
+# Part 3: TreeView and Related Functions
+# This part handles displaying and managing subject data in the TreeView widget.
+subject_tree = ttk.Treeview(root, columns=("Subject", "Obtained", "Maximum", "Grade"), show="headings")
+subject_tree.heading("Subject", text="Subject")
+subject_tree.heading("Obtained", text="Obtained Marks")
+subject_tree.heading("Maximum", text="Max Marks")
+subject_tree.heading("Grade", text="Grade")
+subject_tree.grid(row=4, column=0, columnspan=2, pady=10)
+
+def add_subject():
+    """It adds subject details to the table."""
+    try:
+        subject = entry_subject.get()
+        obtained = int(entry_obtained.get())
+        maximum = int(entry_max.get())
+        grade = calculate_grade(obtained, maximum)
+        subject_tree.insert("", "end", values=(subject, obtained, maximum, grade))
+        entry_subject.delete(0, tk.END)
+        entry_obtained.delete(0, tk.END)
+        entry_max.delete(0, tk.END)
+    except ValueError:
+        messagebox.showerror("Input Error", "Enter valid numerical marks.")
+
+def display_results():
+    """Displays the result and save data to file."""
+    student_name = entry_name.get()
+    if not student_name:
+        messagebox.showerror("Input Error", "Enter the student name.")
+        return
+    records = [subject_tree.item(item)['values'] for item in subject_tree.get_children()]
+    save_to_file(student_name, records)
+
+# Part 4: Buttons and Application Logic
+# This part manages buttons and additional functions for user interaction.
+tk.Button(root, text="Add Subject", command=add_subject).grid(row=5, column=0, pady=5)
+tk.Button(root, text="Display & Save Results", command=display_results).grid(row=5, column=1, pady=5)
+
+def clear_entries():
+    """Clears all input fields and tree data."""
+    entry_name.delete(0, tk.END)
+    for item in subject_tree.get_children():
+        subject_tree.delete(item)
+
+tk.Button(root, text="New Student", command=clear_entries).grid(row=6, column=0, columnspan=2, pady=5)
+
+root.mainloop()
+
+# Explanation:
+# - Part 1 includes data structures and core logic for calculating grades.
+# - Part 2 sets up the user interface with input fields and labels.
+# - Part 3 handles the TreeView widget for managing subject data and includes functions to add and save data.
+# - Part 4 focuses on buttons and user interactions, maintaining a modular approach.
